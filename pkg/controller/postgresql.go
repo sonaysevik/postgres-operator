@@ -420,6 +420,13 @@ func (c *Controller) queueClusterEvent(informerOldSpec, informerNewSpec *acidv1.
 		clusterError = informerNewSpec.Error
 	}
 
+	// only allow deletion if delete annotations are set and conditions are met
+	if eventType == EventDelete {
+		if err := c.meetsClusterDeleteAnnotations(informerOldSpec); err != nil {
+			c.logger.WithField("cluster-name", clusterName).Warnf("skipping %q event as delete criteria not fulfilled: %s", eventType, err)
+		}
+	}
+
 	if clusterError != "" && eventType != EventDelete {
 		c.logger.WithField("cluster-name", clusterName).Debugf("skipping %q event for the invalid cluster: %s", eventType, clusterError)
 
