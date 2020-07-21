@@ -456,39 +456,13 @@ func (c *Controller) GetReference(postgresql *acidv1.Postgresql) *v1.ObjectRefer
 
 func (c *Controller) meetsClusterDeleteAnnotations(postgresql *acidv1.Postgresql) error {
 
-	for _, deleteCondition := range c.opConfig.ClusterDeleteAnnotations {
-		if value, ok := postgresql.Annotations[deleteCondition.Name]; ok {
-			switch {
-			case deleteCondition.Operator == config.Equals:
-				if !reflect.DeepEqual(value, deleteCondition.Value) {
-					return fmt.Errorf("delete condition %s not met: got %s, expected %s", deleteCondition.Name, value, deleteCondition.Value)
-				}
-			case deleteCondition.Operator == config.NotEquals:
-				if reflect.DeepEqual(value, deleteCondition.Value) {
-					return fmt.Errorf("delete condition %s not met: got %s, but must differ", deleteCondition.Name, value)
-				}
-			case deleteCondition.Operator == config.GreaterThan:
-				if !(value > deleteCondition.Value) {
-					return fmt.Errorf("delete condition %s not met: %s not greater than %s", deleteCondition.Name, value, deleteCondition.Value)
-				}
-			case deleteCondition.Operator == config.GreaterEqualThan:
-				if !(value >= deleteCondition.Value) {
-					return fmt.Errorf("delete condition %s not met: %s not greater or equal than %s", deleteCondition.Name, value, deleteCondition.Value)
-				}
-			case deleteCondition.Operator == config.SmallerThan:
-				if !(value < deleteCondition.Value) {
-					return fmt.Errorf("delete condition %s not met: %s not smaller than %s", deleteCondition.Name, value, deleteCondition.Value)
-				}
-			case deleteCondition.Operator == config.SmallerEqualThan:
-				if !(value <= deleteCondition.Value) {
-					return fmt.Errorf("delete condition %s not met: %s not smaller or equal than %s", deleteCondition.Name, value, deleteCondition.Value)
-				}
-			default:
-				return fmt.Errorf("operator for delete condition %s not configured correctly: got %s, expected on of [=,!=,>,>=,<,<=]",
-					deleteCondition.Name, deleteCondition.Operator)
+	for k, v := range c.opConfig.ClusterDeleteAnnotations {
+		if value, ok := postgresql.Annotations[k]; ok {
+			if !reflect.DeepEqual(value, v) {
+				return fmt.Errorf("delete annotation %s not matching: got %s, expected %s", k, value, v)
 			}
 		} else {
-			return fmt.Errorf("delete condition %s not set in manifest to allow cluster deletion", deleteCondition.Name)
+			return fmt.Errorf("delete condition %s not set in manifest to allow cluster deletion", k)
 		}
 	}
 

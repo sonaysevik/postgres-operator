@@ -22,22 +22,6 @@ type fieldInfo struct {
 // StringTemplate is a convenience alias
 type StringTemplate string
 
-// DeleteCondition to define before allowing cluster deletion
-type DeleteCondition struct {
-	Name     string
-	Operator string
-	Value    string
-}
-
-const (
-	Equals           = "="
-	NotEquals        = "!="
-	GreaterThan      = ">"
-	GreaterEqualThan = ">="
-	SmallerThan      = "<"
-	SmallerEqualThan = "<="
-)
-
 func decoderFrom(field reflect.Value) (d decoder) {
 	// it may be impossible for a struct field to fail this check
 	if !field.CanInterface() {
