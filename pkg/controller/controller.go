@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	acidv1 "github.com/zalando/postgres-operator/pkg/apis/acid.zalan.do/v1"
@@ -456,13 +456,29 @@ func (c *Controller) GetReference(postgresql *acidv1.Postgresql) *v1.ObjectRefer
 
 func (c *Controller) meetsClusterDeleteAnnotations(postgresql *acidv1.Postgresql) error {
 
-	for k, v := range c.opConfig.ClusterDeleteAnnotations {
-		if value, ok := postgresql.Annotations[k]; ok {
-			if !reflect.DeepEqual(value, v) {
-				return fmt.Errorf("delete annotation %s not matching: got %s, expected %s", k, value, v)
+	deleteAnnotationNameKey := c.opConfig.DeleteAnnotationNameKey
+
+	if deleteAnnotationNameKey != "" {
+		if clusterName, ok := postgresql.Annotations[deleteAnnotationNameKey]; ok {
+			if clusterName != postgresql.Name {
+				return fmt.Errorf("annotation %s not matching the cluster name: got %s, expected %s", deleteAnnotationNameKey, clusterName, postgresql.Name)
 			}
 		} else {
-			return fmt.Errorf("delete condition %s not set in manifest to allow cluster deletion", k)
+			return fmt.Errorf("annotation %s not set in manifest to allow cluster deletion", deleteAnnotationNameKey)
+		}
+	}
+
+	deleteAnnotationDateKey := c.opConfig.DeleteAnnotationDateKey
+	currentTime := time.Now()
+	currentDate := currentTime.Format("2020-02-02")
+
+	if deleteAnnotationDateKey != "" {
+		if deleteDate, ok := postgresql.Annotations[deleteAnnotationDateKey]; ok {
+			if deleteDate != currentDate {
+				return fmt.Errorf("annotation %s not matching the current date: got %s, expected %s", deleteAnnotationDateKey, deleteDate, currentDate)
+			}
+		} else {
+			return fmt.Errorf("annotation %s not set in manifest to allow cluster deletion", deleteAnnotationDateKey)
 		}
 	}
 

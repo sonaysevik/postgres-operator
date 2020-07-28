@@ -185,13 +185,6 @@ func (in *KubernetesMetaConfiguration) DeepCopyInto(out *KubernetesMetaConfigura
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
-	if in.ClusterDeleteAnnotations != nil {
-		in, out := &in.ClusterDeleteAnnotations, &out.ClusterDeleteAnnotations
-		*out = make(map[string]string, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
-		}
-	}
 	if in.NodeReadinessLabel != nil {
 		in, out := &in.NodeReadinessLabel, &out.NodeReadinessLabel
 		*out = make(map[string]string, len(*in))

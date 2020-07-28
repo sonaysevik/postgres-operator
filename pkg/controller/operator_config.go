@@ -75,8 +75,9 @@ func (c *Controller) importConfigurationFromCRD(fromCRD *acidv1.OperatorConfigur
 	result.ClusterLabels = util.CoalesceStrMap(fromCRD.Kubernetes.ClusterLabels, map[string]string{"application": "spilo"})
 	result.InheritedLabels = fromCRD.Kubernetes.InheritedLabels
 	result.DownscalerAnnotations = fromCRD.Kubernetes.DownscalerAnnotations
-	result.ClusterDeleteAnnotations = fromCRD.Kubernetes.ClusterDeleteAnnotations
 	result.ClusterNameLabel = util.Coalesce(fromCRD.Kubernetes.ClusterNameLabel, "cluster-name")
+	result.DeleteAnnotationNameKey = fromCRD.Kubernetes.DeleteAnnotationNameKey
+	result.DeleteAnnotationDateKey = fromCRD.Kubernetes.DeleteAnnotationDateKey
 	result.NodeReadinessLabel = fromCRD.Kubernetes.NodeReadinessLabel
 	result.PodPriorityClassName = fromCRD.Kubernetes.PodPriorityClassName
 	result.PodManagementPolicy = util.Coalesce(fromCRD.Kubernetes.PodManagementPolicy, "ordered_ready")

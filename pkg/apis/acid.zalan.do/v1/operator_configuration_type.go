@@ -64,8 +64,9 @@ type KubernetesMetaConfiguration struct {
 	ClusterLabels                          map[string]string     `json:"cluster_labels,omitempty"`
 	InheritedLabels                        []string              `json:"inherited_labels,omitempty"`
 	DownscalerAnnotations                  []string              `json:"downscaler_annotations,omitempty"`
-	ClusterDeleteAnnotations               map[string]string     `json:"cluster_delete_annotations,omitempty"`
 	ClusterNameLabel                       string                `json:"cluster_name_label,omitempty"`
+	DeleteAnnotationNameKey                string                `json:"delete_annotation_name_key,omitempty"`
+	DeleteAnnotationDateKey                string                `json:"delete_annotation_date_key,omitempty"`
 	NodeReadinessLabel                     map[string]string     `json:"node_readiness_label,omitempty"`
 	CustomPodAnnotations                   map[string]string     `json:"custom_pod_annotations,omitempty"`
 	// TODO: use a proper toleration structure?
