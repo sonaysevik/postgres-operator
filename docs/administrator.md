@@ -139,8 +139,8 @@ kind: ConfigMap
 metadata:
   name: postgres-operator
 data:
-  delete_annotation_date_key: "deletedate"
-  delete_annotation_name_key: "deletecluster"
+  delete_annotation_date_key: "delete-date"
+  delete_annotation_name_key: "delete-clustername"
 ```
 
 **OperatorConfiguration**
@@ -152,8 +152,8 @@ metadata:
   name: postgresql-operator-configuration
 configuration:
   kubernetes:
-    delete_annotation_date_key: "deletedate"
-    delete_annotation_name_key: "deletecluster"
+    delete_annotation_date_key: "delete-date"
+    delete_annotation_name_key: "delete-clustername"
 ```
 
 Now, every cluster manifest must contain the configured annotation keys to
@@ -170,8 +170,8 @@ kind: postgresql
 metadata:
   name: demo-cluster
   annotations:
-    deletedate: "2020-08-31"
-    deletecluster: "demo-cluster"
+    delete-date: "2020-08-31"
+    delete-clustername: "demo-cluster"
 spec:
   ...
 ```

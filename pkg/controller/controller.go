@@ -456,18 +456,6 @@ func (c *Controller) GetReference(postgresql *acidv1.Postgresql) *v1.ObjectRefer
 
 func (c *Controller) meetsClusterDeleteAnnotations(postgresql *acidv1.Postgresql) error {
 
-	deleteAnnotationNameKey := c.opConfig.DeleteAnnotationNameKey
-
-	if deleteAnnotationNameKey != "" {
-		if clusterName, ok := postgresql.Annotations[deleteAnnotationNameKey]; ok {
-			if clusterName != postgresql.Name {
-				return fmt.Errorf("annotation %s not matching the cluster name: got %s, expected %s", deleteAnnotationNameKey, clusterName, postgresql.Name)
-			}
-		} else {
-			return fmt.Errorf("annotation %s not set in manifest to allow cluster deletion", deleteAnnotationNameKey)
-		}
-	}
-
 	deleteAnnotationDateKey := c.opConfig.DeleteAnnotationDateKey
 	currentTime := time.Now()
 	currentDate := currentTime.Format("2006-01-02") // go's reference date
@@ -479,6 +467,18 @@ func (c *Controller) meetsClusterDeleteAnnotations(postgresql *acidv1.Postgresql
 			}
 		} else {
 			return fmt.Errorf("annotation %s not set in manifest to allow cluster deletion", deleteAnnotationDateKey)
+		}
+	}
+
+	deleteAnnotationNameKey := c.opConfig.DeleteAnnotationNameKey
+
+	if deleteAnnotationNameKey != "" {
+		if clusterName, ok := postgresql.Annotations[deleteAnnotationNameKey]; ok {
+			if clusterName != postgresql.Name {
+				return fmt.Errorf("annotation %s not matching the cluster name: got %s, expected %s", deleteAnnotationNameKey, clusterName, postgresql.Name)
+			}
+		} else {
+			return fmt.Errorf("annotation %s not set in manifest to allow cluster deletion", deleteAnnotationNameKey)
 		}
 	}
 
