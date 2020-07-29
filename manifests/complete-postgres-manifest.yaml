@@ -6,6 +6,8 @@ metadata:
 #    environment: demo
 #  annotations:
 #    "acid.zalan.do/controller": "second-operator"
+#    "acid.zalan.do/deletedate": "2020-08-31"  # can only be deleted on that day if key is configured
+#    "acid.zalan.do/deleteclustername": "acid-test-cluster"  # can only be deleted when name matches if key is configured
 spec:
   dockerImage: registry.opensource.zalan.do/acid/spilo-12:1.6-p3
   teamId: "acid"

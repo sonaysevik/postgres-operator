@@ -470,7 +470,7 @@ func (c *Controller) meetsClusterDeleteAnnotations(postgresql *acidv1.Postgresql
 
 	deleteAnnotationDateKey := c.opConfig.DeleteAnnotationDateKey
 	currentTime := time.Now()
-	currentDate := currentTime.Format("2020-02-02")
+	currentDate := currentTime.Format("2006-01-02") // go's reference date
 
 	if deleteAnnotationDateKey != "" {
 		if deleteDate, ok := postgresql.Annotations[deleteAnnotationDateKey]; ok {
