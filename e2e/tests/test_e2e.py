@@ -607,7 +607,7 @@ class EndToEndTestCase(unittest.TestCase):
         # add annotations to manifest
         deleteDate = datetime.today().strftime('%Y-%m-%d')
         pg_patch_delete_annotations = {
-            "matadata": {
+            "metadata": {
                 "annotations": {
                     "delete-date": deleteDate,
                     "delete-clustername": "acid-minimal-cluster",
