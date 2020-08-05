@@ -6,7 +6,7 @@ import warnings
 import os
 import yaml
 
-from datetime import date
+from datetime import datetime
 from kubernetes import client, config
 
 
