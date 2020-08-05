@@ -572,7 +572,7 @@ class EndToEndTestCase(unittest.TestCase):
         self.assert_distributed_pods(new_master_node, new_replica_nodes, cluster_label)
 
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
-    def test_cluster_deletion(self):
+    def test_x_cluster_deletion(self):
         '''
            Test deletion with configured protection
         '''
@@ -626,13 +626,13 @@ class EndToEndTestCase(unittest.TestCase):
         time.sleep(120)
 
         # check if everything has been deleted
-        k8s.assertEqual(0, k8s.count_pods_with_label(cluster_label))
-        k8s.assertEqual(0, k8s.count_services_with_label(cluster_label))
-        k8s.assertEqual(0, k8s.count_endpoints_with_label(cluster_label))
-        k8s.assertEqual(0, k8s.count_statefulsets_with_label(cluster_label))
-        k8s.assertEqual(0, k8s.count_deployments_with_label(cluster_label))
-        k8s.assertEqual(0, k8s.count_pdbs_with_label(cluster_label))
-        k8s.assertEqual(0, k8s.count_secrets_with_label(cluster_label))
+        self.assertEqual(0, k8s.count_pods_with_label(cluster_label))
+        self.assertEqual(0, k8s.count_services_with_label(cluster_label))
+        self.assertEqual(0, k8s.count_endpoints_with_label(cluster_label))
+        self.assertEqual(0, k8s.count_statefulsets_with_label(cluster_label))
+        self.assertEqual(0, k8s.count_deployments_with_label(cluster_label))
+        self.assertEqual(0, k8s.count_pdbs_with_label(cluster_label))
+        self.assertEqual(0, k8s.count_secrets_with_label(cluster_label))
 
     def get_failover_targets(self, master_node, replica_nodes):
         '''
