@@ -6,6 +6,7 @@ import warnings
 import os
 import yaml
 
+from datetime import date
 from kubernetes import client, config
 
 
@@ -69,6 +70,7 @@ class EndToEndTestCase(unittest.TestCase):
             print('Operator log: {}'.format(k8s.get_operator_log()))
             raise
 
+    """
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_enable_disable_connection_pooler(self):
         '''
@@ -569,6 +571,70 @@ class EndToEndTestCase(unittest.TestCase):
 
         # toggle pod anti affinity to move replica away from master node
         self.assert_distributed_pods(new_master_node, new_replica_nodes, cluster_label)
+    """
+
+    @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
+    def test_cluster_deletion(self):
+        '''
+           Test deletion with configured protection
+        '''
+        k8s = self.k8s
+        cluster_label = 'application=spilo,cluster-name=acid-minimal-cluster'
+
+        # configure delete protection
+        patch_delete_annotations = {
+            "data": {
+                "delete_annotation_date_key": "delete-date",
+                "delete_annotation_name_key": "delete-clustername"
+            }
+        }
+        k8s.update_config(patch_delete_annotations)
+
+        # this delete attempt should be omitted because of missing annotations
+        k8s.api.custom_objects_api.delete_namespaced_custom_object(
+            "acid.zalan.do", "v1", "default", "postgresqls", "acid-minimal-cluster")
+
+        # check that pods and services are still there
+        k8s.wait_for_running_pods(cluster_label, 2)
+        k8s.wait_for_service(cluster_label)
+
+        # recreate Postgres cluster resource
+        result = k8s.create_with_kubectl("manifests/minimal-postgres-manifest.yaml")
+
+        # wait a little before proceeding
+        time.sleep(10)
+
+        # add annotations to manifest
+        deleteDate = datetime.today().strftime('%Y-%m-%d')
+        pg_patch_delete_annotations = {
+            "matadata": {
+                "annotations": {
+                    "delete-date": deleteDate,
+                    "delete-clustername": "acid-minimal-cluster",
+                }
+            }
+        }
+        k8s.api.custom_objects_api.patch_namespaced_custom_object(
+            "acid.zalan.do", "v1", "default", "postgresqls", "acid-minimal-cluster", pg_patch_delete_annotations)
+
+        # wait a little before proceeding
+        time.sleep(10)
+
+        # now delete process should be triggered
+        k8s.api.custom_objects_api.delete_namespaced_custom_object(
+            "acid.zalan.do", "v1", "default", "postgresqls", "acid-minimal-cluster")
+
+        # wait until cluster is deleted
+        time.sleep(120)
+
+        # check if everything has been deleted
+        k8s.assertEqual(0, k8s.count_pods_with_label(cluster_label))
+        k8s.assertEqual(0, k8s.count_services_with_label(cluster_label))
+        k8s.assertEqual(0, k8s.count_endpoints_with_label(cluster_label))
+        k8s.assertEqual(0, k8s.count_statefulsets_with_label(cluster_label))
+        k8s.assertEqual(0, k8s.count_deployments_with_label(cluster_label))
+        k8s.assertEqual(0, k8s.count_pdbs_with_label(cluster_label))
+        k8s.assertEqual(0, k8s.count_secrets_with_label(cluster_label))
 
     def get_failover_targets(self, master_node, replica_nodes):
         '''
@@ -656,6 +722,7 @@ class K8sApi:
         self.apps_v1 = client.AppsV1Api()
         self.batch_v1_beta1 = client.BatchV1beta1Api()
         self.custom_objects_api = client.CustomObjectsApi()
+        self.policy_v1_beta1 = client.PolicyV1beta1Api()
 
 
 class K8s:
@@ -779,6 +846,25 @@ class K8s:
 
     def count_pods_with_label(self, labels, namespace='default'):
         return len(self.api.core_v1.list_namespaced_pod(namespace, label_selector=labels).items)
+
+    def count_services_with_label(self, labels, namespace='default'):
+        return len(self.api.core_v1.list_namespaced_service(namespace, label_selector=labels).items)
+
+    def count_endpoints_with_label(self, labels, namespace='default'):
+        return len(self.api.core_v1.list_namespaced_endpoints(namespace, label_selector=labels).items)
+
+    def count_secrets_with_label(self, labels, namespace='default'):
+        return len(self.api.core_v1.list_namespaced_secret(namespace, label_selector=labels).items)
+
+    def count_statefulsets_with_label(self, labels, namespace='default'):
+        return len(self.api.apps_v1.list_namespaced_stateful_set(namespace, label_selector=labels).items)
+
+    def count_deployments_with_label(self, labels, namespace='default'):
+        return len(self.api.apps_v1.list_namespaced_deployment(namespace, label_selector=labels).items)
+
+    def count_pdbs_with_label(self, labels, namespace='default'):
+        return len(self.api.policy_v1_beta1.list_namespaced_pod_disruption_budget(
+            namespace, label_selector=labels).items)
 
     def wait_for_pod_failover(self, failover_targets, labels, namespace='default'):
         pod_phase = 'Failing over'
