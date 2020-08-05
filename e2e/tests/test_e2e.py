@@ -70,6 +70,7 @@ class EndToEndTestCase(unittest.TestCase):
             print('Operator log: {}'.format(k8s.get_operator_log()))
             raise
 
+    """
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_enable_disable_connection_pooler(self):
         '''
@@ -570,6 +571,7 @@ class EndToEndTestCase(unittest.TestCase):
 
         # toggle pod anti affinity to move replica away from master node
         self.assert_distributed_pods(new_master_node, new_replica_nodes, cluster_label)
+    """
 
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_x_cluster_deletion(self):
@@ -624,6 +626,8 @@ class EndToEndTestCase(unittest.TestCase):
 
         # wait until cluster is deleted
         time.sleep(120)
+
+        print('Operator log: {}'.format(k8s.get_operator_log()))
 
         # check if everything has been deleted
         self.assertEqual(0, k8s.count_pods_with_label(cluster_label))
