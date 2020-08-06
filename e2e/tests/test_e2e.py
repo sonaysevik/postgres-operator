@@ -608,7 +608,7 @@ class EndToEndTestCase(unittest.TestCase):
         self.assertDictEqual(role, {
             "Name": "robot_zmon_acid_monitoring_new",
             "Flags": None,
-            "MemberOf": ["robot_zmon_new"],
+            "MemberOf": ["robot_zmon"],
             "Parameters": None,
             "AdminRole": "",
             "Origin": 2,
