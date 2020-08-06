@@ -770,7 +770,7 @@ class K8sApi:
 
 class K8s:
     '''
-    Wraps around K8 api client and helper methods.
+    Wraps around K8s api client and helper methods.
     '''
 
     RETRY_TIMEOUT_SEC = 10

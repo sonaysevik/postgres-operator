@@ -44,7 +44,7 @@ Once the validation is enabled it can only be disabled manually by editing or
 patching the CRD manifest:
 
 ```bash
-zk8 patch crd postgresqls.acid.zalan.do -p '{"spec":{"validation": null}}'
+kubectl patch crd postgresqls.acid.zalan.do -p '{"spec":{"validation": null}}'
 ```
 
 ## Non-default cluster domain
@@ -646,9 +646,9 @@ The configuration paramaters that we will be using are:
 * `gcp_credentials`
 * `wal_gs_bucket`
 
-### Generate a K8 secret resource
+### Generate a K8s secret resource
 
-Generate the K8 secret resource that will contain your service account's
+Generate the K8s secret resource that will contain your service account's
 credentials. It's highly recommended to use a service account and limit its
 scope to just the WAL-E bucket.
 
@@ -673,13 +673,13 @@ the operator's configuration is set up like the following:
 ...
 aws_or_gcp:
   additional_secret_mount: "pgsql-wale-creds"
-  additional_secret_mount_path: "/var/secrets/google" # or where ever you want to mount the file
+  additional_secret_mount_path: "/var/secrets/google"  # or where ever you want to mount the file
   # aws_region: eu-central-1
   # kube_iam_role: ""
   # log_s3_bucket: ""
   # wal_s3_bucket: ""
-  wal_gs_bucket: "postgres-backups-bucket-28302F2" # name of bucket on where to save the WAL-E logs
-  gcp_credentials: "/var/secrets/google/key.json" # combination of the mount path & key in the K8 resource. (i.e. key.json)
+  wal_gs_bucket: "postgres-backups-bucket-28302F2"  # name of bucket on where to save the WAL-E logs
+  gcp_credentials: "/var/secrets/google/key.json"  # combination of the mount path & key in the K8s resource. (i.e. key.json)
 ...
 ```
 
