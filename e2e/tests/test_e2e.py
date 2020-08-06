@@ -573,7 +573,6 @@ class EndToEndTestCase(unittest.TestCase):
 
         # toggle pod anti affinity to move replica away from master node
         self.assert_distributed_pods(new_master_node, new_replica_nodes, cluster_label)
-    """
 
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_infrastructure_roles(self):
@@ -615,6 +614,7 @@ class EndToEndTestCase(unittest.TestCase):
             "AdminRole": "",
             "Origin": 2,
         })
+    """
 
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_x_cluster_deletion(self):
@@ -646,8 +646,8 @@ class EndToEndTestCase(unittest.TestCase):
         k8s.wait_for_service(cluster_label)
 
         # recreate Postgres cluster resource
-        k8s.api.custom_objects_api.create_cluster_custom_object(
-            "acid.zalan.do", "v1", "postgresqls", body=pg)
+        k8s.api.custom_objects_api.create_namespaced_custom_object(
+            "acid.zalan.do", "v1", "default", "postgresqls", body=pg)
 
         # wait a little before proceeding
         time.sleep(10)
