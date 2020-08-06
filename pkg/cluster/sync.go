@@ -496,6 +496,7 @@ func (c *Cluster) syncSecrets() error {
 			if secret, err = c.KubeClient.Secrets(secretSpec.Namespace).Get(context.TODO(), secretSpec.Name, metav1.GetOptions{}); err != nil {
 				return fmt.Errorf("could not get current secret: %v", err)
 			}
+			c.Secrets[secret.UID] = secret
 			if secretUsername != string(secret.Data["username"]) {
 				c.logger.Warningf("secret %q does not contain the role %q", secretSpec.Name, secretUsername)
 				continue
