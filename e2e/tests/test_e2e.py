@@ -637,6 +637,11 @@ class EndToEndTestCase(unittest.TestCase):
         pg = k8s.api.custom_objects_api.get_namespaced_custom_object(
             "acid.zalan.do", "v1", "default", "postgresqls", "acid-minimal-cluster")
 
+        for meta in pg["metadata"]:
+            del meta['creationTimestamp']
+            del meta['resourceVersion']
+            del meta['uid']
+
         # this delete attempt should be omitted because of missing annotations
         k8s.api.custom_objects_api.delete_namespaced_custom_object(
             "acid.zalan.do", "v1", "default", "postgresqls", "acid-minimal-cluster")
