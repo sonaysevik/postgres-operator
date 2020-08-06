@@ -637,10 +637,7 @@ class EndToEndTestCase(unittest.TestCase):
         pg = k8s.api.custom_objects_api.get_namespaced_custom_object(
             "acid.zalan.do", "v1", "default", "postgresqls", "acid-minimal-cluster")
 
-        for meta in pg["metadata"]:
-            del meta['creationTimestamp']
-            del meta['resourceVersion']
-            del meta['uid']
+        newPg = [x for x in json.load(pg) if x not in ('creationTimestamp', 'resourceVersion', 'selfLink', 'uid')]
 
         # this delete attempt should be omitted because of missing annotations
         k8s.api.custom_objects_api.delete_namespaced_custom_object(
@@ -652,7 +649,7 @@ class EndToEndTestCase(unittest.TestCase):
 
         # recreate Postgres cluster resource
         k8s.api.custom_objects_api.create_namespaced_custom_object(
-            "acid.zalan.do", "v1", "default", "postgresqls", body=pg)
+            "acid.zalan.do", "v1", "default", "postgresqls", body=newPg)
 
         # wait a little before proceeding
         time.sleep(10)
