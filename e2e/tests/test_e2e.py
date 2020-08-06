@@ -1,3 +1,4 @@
+import json
 import unittest
 import time
 import timeout_decorator
@@ -51,7 +52,8 @@ class EndToEndTestCase(unittest.TestCase):
 
         for filename in ["operator-service-account-rbac.yaml",
                          "configmap.yaml",
-                         "postgres-operator.yaml"]:
+                         "postgres-operator.yaml",
+                         "infrastructure-roles-new.yaml"]:
             result = k8s.create_with_kubectl("manifests/" + filename)
             print("stdout: {}, stderr: {}".format(result.stdout, result.stderr))
 
@@ -70,7 +72,6 @@ class EndToEndTestCase(unittest.TestCase):
             print('Operator log: {}'.format(k8s.get_operator_log()))
             raise
 
-    """
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_enable_disable_connection_pooler(self):
         '''
@@ -571,7 +572,47 @@ class EndToEndTestCase(unittest.TestCase):
 
         # toggle pod anti affinity to move replica away from master node
         self.assert_distributed_pods(new_master_node, new_replica_nodes, cluster_label)
-    """
+
+    @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
+    def test_infrastructure_roles(self):
+        '''
+            Test using external secrets for infrastructure roles
+        '''
+        k8s = self.k8s
+        # update infrastructure roles description
+        secret_name = "postgresql-infrastructure-roles-old"
+        roles = "secretname: postgresql-infrastructure-roles-new, userkey: user, rolekey: role, passwordkey: password"
+        patch_infrastructure_roles = {
+            "data": {
+                "infrastructure_roles_secret_name": secret_name,
+                "infrastructure_roles_secrets": roles,
+            },
+        }
+        k8s.update_config(patch_infrastructure_roles)
+
+        # wait a little before proceeding
+        time.sleep(30)
+
+        # check that new roles are represented in the config by requesting the
+        # operator configuration via API
+        operator_pod = k8s.get_operator_pod()
+        get_config_cmd = "wget --quiet -O - localhost:8080/config"
+        result = k8s.exec_with_kubectl(operator_pod.metadata.name, get_config_cmd)
+        roles_dict = (json.loads(result.stdout)
+                    .get("controller", {})
+                    .get("InfrastructureRoles"))
+
+        self.assertTrue("robot_zmon_acid_monitoring_new" in roles_dict)
+        role = roles_dict["robot_zmon_acid_monitoring_new"]
+        role.pop("Password", None)
+        self.assertDictEqual(role, {
+            "Name": "robot_zmon_acid_monitoring_new",
+            "Flags": None,
+            "MemberOf": ["robot_zmon_new"],
+            "Parameters": None,
+            "AdminRole": "",
+            "Origin": 2,
+        })
 
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_x_cluster_deletion(self):
@@ -905,6 +946,11 @@ class K8s:
     def create_with_kubectl(self, path):
         return subprocess.run(
             ["kubectl", "create", "-f", path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+
+    def exec_with_kubectl(self, pod, cmd):
+        return subprocess.run(["./exec.sh", pod, cmd],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
 
