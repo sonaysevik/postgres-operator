@@ -903,7 +903,7 @@ class K8s:
     def count_secrets_with_label(self, labels, namespace='default'):
         secrets = self.api.core_v1.list_namespaced_secret(namespace, label_selector=labels).items
         for secret in secrets:
-            print("Leftover secret: {}".format(secret.metadata.Name))
+            print("Leftover secret: {}".format(secret.metadata.name))
         return len(self.api.core_v1.list_namespaced_secret(namespace, label_selector=labels).items)
 
     def count_statefulsets_with_label(self, labels, namespace='default'):
