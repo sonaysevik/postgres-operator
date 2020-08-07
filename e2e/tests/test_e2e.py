@@ -72,7 +72,6 @@ class EndToEndTestCase(unittest.TestCase):
             print('Operator log: {}'.format(k8s.get_operator_log()))
             raise
 
-    """
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_enable_disable_connection_pooler(self):
         '''
@@ -614,7 +613,6 @@ class EndToEndTestCase(unittest.TestCase):
             "AdminRole": "",
             "Origin": 2,
         })
-    """
 
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_x_cluster_deletion(self):
@@ -633,12 +631,6 @@ class EndToEndTestCase(unittest.TestCase):
         }
         k8s.update_config(patch_delete_annotations)
 
-        # get Postgresql first to use it for recreation
-        pg = k8s.api.custom_objects_api.get_namespaced_custom_object(
-            "acid.zalan.do", "v1", "default", "postgresqls", "acid-minimal-cluster")
-
-        pgStr = [x for x in json.dumps(pg) if x not in ('creationTimestamp', 'resourceVersion', 'selfLink', 'uid')]
-
         # this delete attempt should be omitted because of missing annotations
         k8s.api.custom_objects_api.delete_namespaced_custom_object(
             "acid.zalan.do", "v1", "default", "postgresqls", "acid-minimal-cluster")
@@ -648,8 +640,7 @@ class EndToEndTestCase(unittest.TestCase):
         k8s.wait_for_service(cluster_label)
 
         # recreate Postgres cluster resource
-        k8s.api.custom_objects_api.create_namespaced_custom_object(
-            "acid.zalan.do", "v1", "default", "postgresqls", body=json.loads(pgStr))
+        k8s.create_with_kubectl("manifests/minimal-postgres-manifest.yaml")
 
         # wait a little before proceeding
         time.sleep(10)
@@ -669,6 +660,8 @@ class EndToEndTestCase(unittest.TestCase):
 
         # wait a little before proceeding
         time.sleep(10)
+        k8s.wait_for_running_pods(cluster_label, 2)
+        k8s.wait_for_service(cluster_label)
 
         # now delete process should be triggered
         k8s.api.custom_objects_api.delete_namespaced_custom_object(
