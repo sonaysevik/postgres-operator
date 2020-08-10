@@ -53,6 +53,7 @@ class EndToEndTestCase(unittest.TestCase):
         for filename in ["operator-service-account-rbac.yaml",
                          "configmap.yaml",
                          "postgres-operator.yaml",
+                         "infrastructure-roles.yaml",
                          "infrastructure-roles-new.yaml"]:
             result = k8s.create_with_kubectl("manifests/" + filename)
             print("stdout: {}, stderr: {}".format(result.stdout, result.stderr))
@@ -148,7 +149,6 @@ class EndToEndTestCase(unittest.TestCase):
         except timeout_decorator.TimeoutError:
             print('Operator log: {}'.format(k8s.get_operator_log()))
             raise
-    """
 
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_enable_load_balancer(self):
@@ -573,7 +573,6 @@ class EndToEndTestCase(unittest.TestCase):
 
         # toggle pod anti affinity to move replica away from master node
         self.assert_distributed_pods(new_master_node, new_replica_nodes, cluster_label)
-    """
 
     @timeout_decorator.timeout(TEST_TIMEOUT_SEC)
     def test_infrastructure_roles(self):
@@ -582,8 +581,8 @@ class EndToEndTestCase(unittest.TestCase):
         '''
         k8s = self.k8s
         # update infrastructure roles description
-        secret_name = "postgresql-infrastructure-roles-old"
-        roles = "secretname: postgresql-infrastructure-roles-new, userkey: user, rolekey: role, passwordkey: password"
+        secret_name = "postgresql-infrastructure-roles"
+        roles = "secretname: postgresql-infrastructure-roles-new, userkey: user, rolekey: memberof, passwordkey: password, defaultrolevalue: robot_zmon"
         patch_infrastructure_roles = {
             "data": {
                 "infrastructure_roles_secret_name": secret_name,
