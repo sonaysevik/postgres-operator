@@ -423,7 +423,10 @@ func (c *Controller) queueClusterEvent(informerOldSpec, informerNewSpec *acidv1.
 	// only allow deletion if delete annotations are set and conditions are met
 	if eventType == EventDelete {
 		if err := c.meetsClusterDeleteAnnotations(informerOldSpec); err != nil {
-			c.logger.WithField("cluster-name", clusterName).Warnf("skipping %q event as delete criteria not fulfilled: %s", eventType, err)
+			c.logger.WithField("cluster-name", clusterName).Warnf(
+				"ignoring %q event for cluster %q - manifest does not fulfill delete requirements: %s", eventType, clusterName, err)
+			c.logger.WithField("cluster-name", clusterName).Warnf(
+				"please, recreate Postgresql resource %q and set annotations to delete properly:\n%v", clusterName, informerOldSpec)
 			return
 		}
 	}
